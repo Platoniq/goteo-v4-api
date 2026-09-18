@@ -1,4 +1,7 @@
 # Introduction
+Goteo v4 API: Platoniq's instance.
+
+[Github](https://github.com/Platoniq/goteo-v4-api)
 
 The v4 API is a multi-capable web API based on the [API Platform](https://api-platform.com/) framework, built to support the future generation of the [Goteo](https://goteo.org) crowdfunding platform, aiming to be it's new underlying engine.
 
