@@ -1,6 +1,6 @@
 <?php
 
-namespace App\OAuth\Server;
+namespace App\OAuth2\Server;
 
 use App\Entity\User\User;
 use League\Bundle\OAuth2ServerBundle\Converter\UserConverterInterface;
