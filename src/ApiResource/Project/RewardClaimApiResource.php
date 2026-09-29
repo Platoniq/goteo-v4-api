@@ -9,6 +9,7 @@ use App\ApiResource\Gateway\ChargeApiResource;
 use App\ApiResource\User\UserApiResource;
 use App\Dto\RewardClaimCreationDto;
 use App\Entity\Project\RewardClaim;
+use App\Entity\Project\RewardClaimStatus;
 use App\State\ApiResourceStateProvider;
 use App\State\Project\RewardClaimStateProcessor;
 use App\Validator\AvailableRewardUnits;
@@ -53,4 +54,10 @@ class RewardClaimApiResource
     #[AvailableRewardUnits()]
     #[API\ApiFilter(SearchFilter::class, strategy: 'exact')]
     public RewardApiResource $reward;
+
+    /**
+     * The point at which the claim is in its life-cylce.
+     */
+    #[API\ApiFilter(SearchFilter::class, strategy: 'exact')]
+    public RewardClaimStatus $status;
 }

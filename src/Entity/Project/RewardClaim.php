@@ -35,6 +35,9 @@ class RewardClaim implements UserOwnedInterface
     #[ORM\JoinColumn(nullable: false)]
     private ?Charge $charge = null;
 
+    #[ORM\Column(enumType: RewardClaimStatus::class)]
+    private ?RewardClaimStatus $status = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -60,6 +63,18 @@ class RewardClaim implements UserOwnedInterface
     public function setCharge(?Charge $charge): static
     {
         $this->charge = $charge;
+
+        return $this;
+    }
+
+    public function getStatus(): ?RewardClaimStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(RewardClaimStatus $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }
