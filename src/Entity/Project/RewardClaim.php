@@ -3,10 +3,10 @@
 namespace App\Entity\Project;
 
 use App\Entity\Gateway\Charge;
+use App\Entity\ShippingAddress;
 use App\Entity\User\User;
 use App\Entity\UserOwnedInterface;
 use App\Entity\UserOwnedTrait;
-use App\Entity\ShippingAddress;
 use App\Mapping\Provider\EntityMapProvider;
 use App\Repository\Project\RewardClaimRepository;
 use AutoMapper\Attribute\MapProvider;

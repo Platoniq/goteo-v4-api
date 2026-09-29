@@ -78,7 +78,7 @@ final class ShippingAddress
             );
         }
 
-        throw new \Exception("Could not get a ShippingAddress object from value");
+        throw new \Exception('Could not get a ShippingAddress object from value');
     }
 
     public function toArray(): array
