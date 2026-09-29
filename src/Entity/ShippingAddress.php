@@ -13,35 +13,41 @@ final class ShippingAddress
          * First name(s) of the person receiving the shipment.
          */
         #[Assert\NotBlank()]
+        #[ORM\Column(length: 255)]
         public readonly string $firstName,
 
         /**
          * Last name(s) of the person receiving the shipment.
          */
         #[Assert\NotBlank()]
+        #[ORM\Column(length: 255)]
         public readonly string $lastName,
 
         /**
          * Line 1: usually street name and number.
          */
         #[Assert\NotBlank()]
+        #[ORM\Column(length: 255)]
         public readonly string $addressLine1,
 
         /**
          * Line 2: additional data like apartment number, door, etc.
          */
+        #[ORM\Column(length: 255, nullable: true)]
         public readonly ?string $addressLine2,
 
         /**
          * Name of the city, or the lowest-available type of settlement to which the address lines belong.
          */
         #[Assert\NotBlank()]
+        #[ORM\Column(length: 255)]
         public readonly string $city,
 
         /**
          * Postal/PIN/ZIP code to which the address lines belong.
          */
         #[Assert\NotBlank()]
+        #[ORM\Column(length: 255)]
         public readonly string $postCode,
 
         /**
@@ -50,6 +56,7 @@ final class ShippingAddress
          */
         #[Assert\NotBlank()]
         #[Assert\Country(alpha3: false)]
+        #[ORM\Column(length: 2)]
         public readonly string $country,
     ) {}
 
