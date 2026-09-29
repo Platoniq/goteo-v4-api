@@ -14,8 +14,6 @@ use App\Entity\Project\RewardClaimStatus;
 use App\Entity\ShippingAddress;
 use App\State\ApiResourceStateProvider;
 use App\State\Project\RewardClaimStateProcessor;
-use App\Validator\AvailableRewardUnits;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * A ProjectRewardClaim represents the will of an User who wishes to obtain one ProjectReward.\
@@ -42,22 +40,18 @@ class RewardClaimApiResource
     /**
      * The User claiming the ProjectReward. Derived from the GatewayCharge.
      */
-    #[API\ApiProperty(writable: false)]
     #[API\ApiFilter(SearchFilter::class, strategy: 'exact')]
     public UserApiResource $owner;
 
     /**
      * The GatewayCharge granting access to the ProjectReward.
      */
-    #[Assert\NotBlank()]
     #[API\ApiFilter(SearchFilter::class, strategy: 'exact')]
     public ChargeApiResource $charge;
 
     /**
      * The ProjectReward being claimed.
      */
-    #[Assert\NotBlank()]
-    #[AvailableRewardUnits()]
     #[API\ApiFilter(SearchFilter::class, strategy: 'exact')]
     public RewardApiResource $reward;
 
@@ -70,5 +64,8 @@ class RewardClaimApiResource
     /**
      * Only used when the reward is a physical object that needs to be shipped.
      */
+    #[API\ApiFilter(SearchFilter::class, properties: ['shippingAddress.city' => 'partial'])]
+    #[API\ApiFilter(SearchFilter::class, properties: ['shippingAddress.postCode' => 'partial'])]
+    #[API\ApiFilter(SearchFilter::class, properties: ['shippingAddress.country' => 'partial'])]
     public ?ShippingAddress $shippingAddress;
 }
