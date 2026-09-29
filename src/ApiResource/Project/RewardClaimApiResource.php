@@ -8,6 +8,7 @@ use ApiPlatform\Metadata as API;
 use App\ApiResource\Gateway\ChargeApiResource;
 use App\ApiResource\User\UserApiResource;
 use App\Dto\RewardClaimCreationDto;
+use App\Dto\RewardClaimUpdationDto;
 use App\Entity\Project\RewardClaim;
 use App\Entity\Project\RewardClaimStatus;
 use App\State\ApiResourceStateProvider;
@@ -16,7 +17,10 @@ use App\Validator\AvailableRewardUnits;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * A ProjectRewardClaim represents the will of an User who wishes to obtain one ProjectReward.
+ * A ProjectRewardClaim represents the will of an User who wishes to obtain one ProjectReward.\
+ * \
+ * Once created ProjectRewardClaims can only be deleted by the User who owns it,
+ * while their status can only be updated by the User who owns the Project of the claimed ProjectReward.
  */
 #[API\ApiResource(
     shortName: 'ProjectRewardClaim',
@@ -27,14 +31,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[API\GetCollection()]
 #[API\Post(input: RewardClaimCreationDto::class)]
 #[API\Get()]
-#[API\Delete()]
+#[API\Patch(input: RewardClaimUpdationDto::class)]
+#[API\Delete(security: 'is_granted("CLAIM_OWNS", object)')]
 class RewardClaimApiResource
 {
     #[API\ApiProperty(identifier: true, writable: false)]
     public int $id;
 
     /**
-     * The User claiming the ProjectReward.
+     * The User claiming the ProjectReward. Derived from the GatewayCharge.
      */
     #[API\ApiProperty(writable: false)]
     #[API\ApiFilter(SearchFilter::class, strategy: 'exact')]
