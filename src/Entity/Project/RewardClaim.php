@@ -6,6 +6,7 @@ use App\Entity\Gateway\Charge;
 use App\Entity\User\User;
 use App\Entity\UserOwnedInterface;
 use App\Entity\UserOwnedTrait;
+use App\Entity\ShippingAddress;
 use App\Mapping\Provider\EntityMapProvider;
 use App\Repository\Project\RewardClaimRepository;
 use AutoMapper\Attribute\MapProvider;
@@ -37,6 +38,9 @@ class RewardClaim implements UserOwnedInterface
 
     #[ORM\Column(enumType: RewardClaimStatus::class)]
     private ?RewardClaimStatus $status = RewardClaimStatus::InPending;
+
+    #[ORM\Embedded(class: ShippingAddress::class)]
+    private ?ShippingAddress $shippingAddress = null;
 
     public function getId(): ?int
     {
@@ -75,6 +79,18 @@ class RewardClaim implements UserOwnedInterface
     public function setStatus(RewardClaimStatus $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getShippingAddress(): ?ShippingAddress
+    {
+        return $this->shippingAddress;
+    }
+
+    public function setShippingAddress(?ShippingAddress $shippingAddress): static
+    {
+        $this->shippingAddress = $shippingAddress;
 
         return $this;
     }

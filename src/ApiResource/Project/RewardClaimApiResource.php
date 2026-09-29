@@ -11,6 +11,7 @@ use App\Dto\RewardClaimCreationDto;
 use App\Dto\RewardClaimUpdationDto;
 use App\Entity\Project\RewardClaim;
 use App\Entity\Project\RewardClaimStatus;
+use App\Entity\ShippingAddress;
 use App\State\ApiResourceStateProvider;
 use App\State\Project\RewardClaimStateProcessor;
 use App\Validator\AvailableRewardUnits;
@@ -65,4 +66,9 @@ class RewardClaimApiResource
      */
     #[API\ApiFilter(SearchFilter::class, strategy: 'exact')]
     public RewardClaimStatus $status;
+
+    /**
+     * Only used when the reward is a physical object that needs to be shipped.
+     */
+    public ?ShippingAddress $shippingAddress;
 }
