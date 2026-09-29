@@ -36,7 +36,7 @@ class RewardClaim implements UserOwnedInterface
     private ?Charge $charge = null;
 
     #[ORM\Column(enumType: RewardClaimStatus::class)]
-    private ?RewardClaimStatus $status = null;
+    private ?RewardClaimStatus $status = RewardClaimStatus::InPending;
 
     public function getId(): ?int
     {
