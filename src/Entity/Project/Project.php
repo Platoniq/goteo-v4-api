@@ -561,6 +561,16 @@ class Project implements UserOwnedInterface, AccountingOwnerInterface, Localized
         return $this->collaborations;
     }
 
+    /**
+     * @param Collection<int, Collaboration> $collaborations
+     */
+    public function setCollaborations(Collection $collaborations): static
+    {
+        $this->collaborations = $collaborations;
+
+        return $this;
+    }
+
     public function addCollaboration(Collaboration $collaboration): static
     {
         if (!$this->collaborations->contains($collaboration)) {

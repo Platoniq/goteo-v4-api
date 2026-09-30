@@ -2,6 +2,7 @@
 
 namespace App\Benzina;
 
+use App\Entity\Project\Collaboration;
 use App\Entity\Project\Project;
 use App\Entity\Project\ProjectCalendar;
 use App\Entity\Project\ProjectDeadline;
@@ -79,6 +80,7 @@ class ProjectsPump implements PumpInterface
         $project->setDateUpdated(new \DateTime());
         $project->setTranslatableLocale($record['lang']);
         $project->setUpdates(new ArrayCollection($this->getProjectUpdates($project, $context)));
+        $project->setCollaborations(new ArrayCollection($this->getProjectCollaborations($project, $context)));
 
         $video = $this->getProjectVideo($record);
         if ($video !== null) {
@@ -376,5 +378,26 @@ class ProjectsPump implements PumpInterface
         }
 
         return \sprintf('https://s3.eu-west-1.amazonaws.com/goteoassets.org/images/%s', $image);
+    }
+
+    private function getProjectCollaborations(Project $project, array $context): array
+    {
+        $collaborations = [];
+
+        $query = $this->getDbConnection($context)->prepare(
+            "SELECT * FROM `support` s WHERE s.project = :project"
+        );
+
+        $query->execute(['project' => $project->getMigratedId()]);
+        $supports = $query->fetchAll();
+
+        foreach ($supports as $support) {
+            $collaboration = new Collaboration();
+            $collaboration->setTitle($support['support']);
+            $collaboration->setDescription($support['description']);
+            $collaborations[] = $collaboration;
+        }
+
+        return $collaborations;
     }
 }
