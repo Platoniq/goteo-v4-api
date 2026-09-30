@@ -385,7 +385,7 @@ class ProjectsPump implements PumpInterface
         $collaborations = [];
 
         $query = $this->getDbConnection($context)->prepare(
-            "SELECT * FROM `support` s WHERE s.project = :project"
+            'SELECT * FROM `support` s WHERE s.project = :project'
         );
 
         $query->execute(['project' => $project->getMigratedId()]);
@@ -393,7 +393,7 @@ class ProjectsPump implements PumpInterface
 
         foreach ($supports as $support) {
             $fulfilled = in_array($project->getStatus(), [
-                ProjectStatus::FundingPaid
+                ProjectStatus::FundingPaid,
             ]);
 
             $collaboration = new Collaboration();
