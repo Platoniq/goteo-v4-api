@@ -395,6 +395,7 @@ class ProjectsPump implements PumpInterface
             $collaboration = new Collaboration();
             $collaboration->setTitle($support['support']);
             $collaboration->setDescription($support['description']);
+
             $collaborations[] = $collaboration;
         }
 

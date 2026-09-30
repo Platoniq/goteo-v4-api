@@ -157,7 +157,7 @@ class Project implements UserOwnedInterface, AccountingOwnerInterface, Localized
     /**
      * @var Collection<int, Collaboration>
      */
-    #[ORM\OneToMany(targetEntity: Collaboration::class, mappedBy: 'project')]
+    #[ORM\OneToMany(targetEntity: Collaboration::class, mappedBy: 'project', cascade: ['persist'])]
     private Collection $collaborations;
 
     /**
