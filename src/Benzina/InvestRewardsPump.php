@@ -13,14 +13,13 @@ use App\Repository\Project\RewardRepository;
 use App\Repository\User\UserRepository;
 use Doctrine\Common\Collections\Criteria;
 use Goteo\Benzina\Pump\ArrayPumpTrait;
-use Goteo\Benzina\Pump\DoctrinePumpTrait;
 use Goteo\Benzina\Pump\PumpInterface;
 
 class InvestRewardsPump implements PumpInterface
 {
     use ArrayPumpTrait;
     use DatabasePumpTrait;
-    use DoctrinePumpTrait;
+    use DoctrineLoggablePumpTrait;
     use InvestsPumpTrait;
 
     /** @var array<string, int> */

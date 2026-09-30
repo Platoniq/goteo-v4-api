@@ -18,13 +18,12 @@ use App\Service\Scout\ScoutService;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Goteo\Benzina\Pump\ArrayPumpTrait;
-use Goteo\Benzina\Pump\DoctrinePumpTrait;
 use Goteo\Benzina\Pump\PumpInterface;
 
 class ProjectsPump implements PumpInterface
 {
     use ArrayPumpTrait;
-    use DoctrinePumpTrait;
+    use DoctrineLoggablePumpTrait;
     use DatabasePumpTrait;
     use ProjectsPumpTrait;
     use LocalizedPumpTrait;
