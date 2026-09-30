@@ -392,9 +392,14 @@ class ProjectsPump implements PumpInterface
         $supports = $query->fetchAll();
 
         foreach ($supports as $support) {
+            $fulfilled = in_array($project->getStatus(), [
+                ProjectStatus::FundingPaid
+            ]);
+
             $collaboration = new Collaboration();
             $collaboration->setTitle($support['support']);
             $collaboration->setDescription($support['description']);
+            $collaboration->setFulfilled($fulfilled);
 
             $collaborations[] = $collaboration;
         }
