@@ -27,7 +27,6 @@ use App\Repository\Project\ProjectRepository;
 use App\Repository\Project\RewardRepository;
 use App\Repository\Project\SupportRepository;
 use App\Repository\TipjarRepository;
-use App\Service\Gateway\CheckoutService;
 use Goteo\Benzina\Pump\ArrayPumpTrait;
 use Goteo\Benzina\Pump\PumpInterface;
 
@@ -70,9 +69,10 @@ class InvestsPump implements PumpInterface
         private SupportRepository $supportRepository,
         private TipjarRepository $tipjarRepository,
         private RewardRepository $rewardRepository,
-        private CheckoutService $checkoutService,
         private MoneyService $moneyService,
-    ) {}
+    ) {
+        $this->setFlushBatchSize(8);
+    }
 
     public function supports(mixed $sample): bool
     {

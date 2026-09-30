@@ -11,9 +11,7 @@ use App\Entity\User\User;
 use App\Gateway\ChargeStatus;
 use App\Repository\Gateway\ChargeRepository;
 use App\Repository\Project\RewardRepository;
-use App\Repository\User\UserRepository;
 use App\Service\UserService;
-use Doctrine\Common\Collections\Criteria;
 use Goteo\Benzina\Pump\ArrayPumpTrait;
 use Goteo\Benzina\Pump\PumpInterface;
 
@@ -35,9 +33,11 @@ class InvestRewardsPump implements PumpInterface
 
     public function __construct(
         private RewardRepository $rewardRepository,
-        private UserRepository $userRepository,
+        private PumpedUserRepository $userRepository,
         private ChargeRepository $chargeRepository,
-    ) {}
+    ) {
+        $this->setFlushBatchSize(8);
+    }
 
     public function supports(mixed $sample): bool
     {
@@ -147,23 +147,7 @@ class InvestRewardsPump implements PumpInterface
 
     private function getUser(array $record): ?User
     {
-        $id = $record['user'];
-
-        if (isset($this->userCache[$id])) {
-            return $this->userRepository->find($this->userCache[$id]);
-        }
-
-        $criteria = new Criteria();
-        $criteria
-            ->orWhere($criteria->expr()->eq('migratedId', $id))
-            ->orWhere($criteria->expr()->contains('dedupedIds', $id))
-            ->setMaxResults(1);
-
-        $user = $this->userRepository->matching($criteria)->first();
-
-        $this->userCache[$id] = $user->getId();
-
-        return $user;
+        return $this->userRepository->findPumped($record['user']);
     }
 
     private function getAddress(array $record, array $context): ?ShippingAddress

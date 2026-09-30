@@ -26,7 +26,9 @@ class UsersPump implements PumpInterface
     public function __construct(
         private ManagerRegistry $managerRegistry,
         private TerritoryService $territoryService,
-    ) {}
+    ) {
+        $this->setFlushBatchSize(8);
+    }
 
     public function supports(mixed $sample): bool
     {
