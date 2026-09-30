@@ -12,7 +12,6 @@ use App\Service\Project\TerritoryService;
 use App\Service\UserService;
 use Doctrine\Persistence\ManagerRegistry;
 use Goteo\Benzina\Pump\ArrayPumpTrait;
-use Goteo\Benzina\Pump\DoctrinePumpTrait;
 use Goteo\Benzina\Pump\PumpInterface;
 use Symfony\Component\Validator\Constraints\Url;
 use Symfony\Component\Validator\Validation;
@@ -20,14 +19,16 @@ use Symfony\Component\Validator\Validation;
 class UsersPump implements PumpInterface
 {
     use ArrayPumpTrait;
-    use DoctrinePumpTrait;
+    use DoctrineLoggablePumpTrait;
     use UsersPumpTrait;
     use TerritoryPumpTrait;
 
     public function __construct(
         private ManagerRegistry $managerRegistry,
         private TerritoryService $territoryService,
-    ) {}
+    ) {
+        $this->setFlushBatchSize(8);
+    }
 
     public function supports(mixed $sample): bool
     {

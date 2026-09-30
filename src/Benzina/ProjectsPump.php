@@ -11,20 +11,17 @@ use App\Entity\Project\Update;
 use App\Entity\Territory;
 use App\Entity\User\User;
 use App\Repository\Project\ProjectRepository;
-use App\Repository\User\UserRepository;
 use App\Service\Project\TerritoryService;
-use App\Service\Scout\FileUriException;
+use App\Service\Scout\NonCrawlableUriException;
 use App\Service\Scout\ScoutService;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 use Goteo\Benzina\Pump\ArrayPumpTrait;
-use Goteo\Benzina\Pump\DoctrinePumpTrait;
 use Goteo\Benzina\Pump\PumpInterface;
 
 class ProjectsPump implements PumpInterface
 {
     use ArrayPumpTrait;
-    use DoctrinePumpTrait;
+    use DoctrineLoggablePumpTrait;
     use DatabasePumpTrait;
     use ProjectsPumpTrait;
     use LocalizedPumpTrait;
@@ -32,7 +29,7 @@ class ProjectsPump implements PumpInterface
 
     public function __construct(
         private ProjectRepository $projectRepository,
-        private UserRepository $userRepository,
+        private PumpedUserRepository $userRepository,
         private TerritoryService $territoryService,
         private ScoutService $scoutService,
     ) {}
@@ -124,13 +121,7 @@ class ProjectsPump implements PumpInterface
 
     private function getProjectOwner(array $record): ?User
     {
-        $criteria = new Criteria();
-        $criteria
-            ->orWhere($criteria->expr()->eq('migratedId', $record['owner']))
-            ->orWhere($criteria->expr()->contains('dedupedIds', $record['owner']))
-            ->setMaxResults(1);
-
-        return $this->userRepository->matching($criteria)->first() ?? null;
+        return $this->userRepository->findPumped($record['owner']);
     }
 
     private function getProjectLocalizations(Project $project, array $context): array
@@ -240,7 +231,7 @@ class ProjectsPump implements PumpInterface
             }
 
             return new ProjectVideo($info->url, $info->cover ?? $info->image, $info->image);
-        } catch (FileUriException $e) {
+        } catch (NonCrawlableUriException $e) {
             return new ProjectVideo($e->getUri());
         } catch (\Exception $e) {
             return null;
