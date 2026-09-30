@@ -402,6 +402,7 @@ class ProjectsPump implements PumpInterface
             $collaboration->setFulfilled($fulfilled);
 
             $collaborations[] = $collaboration;
+            $project->addCollaboration($collaboration);
         }
 
         return $collaborations;
