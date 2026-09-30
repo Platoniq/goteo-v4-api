@@ -5,22 +5,21 @@ namespace App\Benzina;
 use App\Entity\Gateway\Charge;
 use App\Entity\Project\Reward;
 use App\Entity\Project\RewardClaim;
+use App\Entity\Project\RewardClaimStatus;
+use App\Entity\ShippingAddress;
 use App\Entity\User\User;
 use App\Gateway\ChargeStatus;
-use App\Money\MoneyService;
 use App\Repository\Gateway\ChargeRepository;
 use App\Repository\Project\RewardRepository;
-use App\Repository\User\UserRepository;
-use Doctrine\Common\Collections\Criteria;
+use App\Service\UserService;
 use Goteo\Benzina\Pump\ArrayPumpTrait;
-use Goteo\Benzina\Pump\DoctrinePumpTrait;
 use Goteo\Benzina\Pump\PumpInterface;
 
 class InvestRewardsPump implements PumpInterface
 {
     use ArrayPumpTrait;
     use DatabasePumpTrait;
-    use DoctrinePumpTrait;
+    use DoctrineLoggablePumpTrait;
     use InvestsPumpTrait;
 
     /** @var array<string, int> */
@@ -34,10 +33,11 @@ class InvestRewardsPump implements PumpInterface
 
     public function __construct(
         private RewardRepository $rewardRepository,
-        private UserRepository $userRepository,
+        private PumpedUserRepository $userRepository,
         private ChargeRepository $chargeRepository,
-        private MoneyService $moneyService,
-    ) {}
+    ) {
+        $this->setFlushBatchSize(8);
+    }
 
     public function supports(mixed $sample): bool
     {
@@ -80,6 +80,14 @@ class InvestRewardsPump implements PumpInterface
 
         $reward->addClaim($claim);
         $claim->setReward($reward);
+
+        $status = match ($record['fulfilled']) {
+            0 => RewardClaimStatus::InPending,
+            1 => RewardClaimStatus::Fulfilled,
+        };
+
+        $claim->setStatus($status);
+        $claim->setShippingAddress($this->getAddress($record, $context));
 
         $this->persist($claim, $context);
     }
@@ -139,22 +147,33 @@ class InvestRewardsPump implements PumpInterface
 
     private function getUser(array $record): ?User
     {
-        $id = $record['user'];
+        return $this->userRepository->findPumped($record['user']);
+    }
 
-        if (isset($this->userCache[$id])) {
-            return $this->userRepository->find($this->userCache[$id]);
+    private function getAddress(array $record, array $context): ?ShippingAddress
+    {
+        $query = $this->getDbConnection($context)->prepare(
+            'SELECT * FROM `invest_address` a WHERE a.invest = :invest'
+        );
+
+        $query->execute(['invest' => $record['invest']]);
+
+        $result = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$result) {
+            return null;
         }
 
-        $criteria = new Criteria();
-        $criteria
-            ->orWhere($criteria->expr()->eq('migratedId', $id))
-            ->orWhere($criteria->expr()->contains('dedupedIds', $id))
-            ->setMaxResults(1);
+        [$firstName, $lastName] = UserService::guessNames($result['name']);
 
-        $user = $this->userRepository->matching($criteria)->first();
-
-        $this->userCache[$id] = $user->getId();
-
-        return $user;
+        return new ShippingAddress(
+            $firstName,
+            $lastName,
+            $result['address'],
+            null,
+            $result['location'],
+            $result['zipcode'],
+            $result['country']
+        );
     }
 }
