@@ -71,7 +71,7 @@ class InvestsPump implements PumpInterface
         private RewardRepository $rewardRepository,
         private MoneyService $moneyService,
     ) {
-        $this->setFlushBatchSize(8);
+        $this->setFlushBatchSize(1);
     }
 
     public function supports(mixed $sample): bool
