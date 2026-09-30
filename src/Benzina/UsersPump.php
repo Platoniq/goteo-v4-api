@@ -89,6 +89,7 @@ class UsersPump implements PumpInterface
         $user->setTerritory($this->getTerritory($record));
         $user->setDescription($record['about']);
         $user->setRoles($this->getRoles($record, $context));
+        $user->setAvatar($this->getAvatar($record));
 
         match ($user->getType()) {
             UserType::Individual => $user = $this->setUserPerson($record, $user),
@@ -230,5 +231,20 @@ class UsersPump implements PumpInterface
         }
 
         return $roles;
+    }
+
+    private function getAvatar(array $record): ?string
+    {
+        $image = $record['avatar'];
+
+        if ($image === null || $image === '') {
+            return null;
+        }
+
+        if (!\str_contains($image, '.')) {
+            return null;
+        }
+
+        return \sprintf('https://s3.eu-west-1.amazonaws.com/goteoassets.org/images/%s', $image);
     }
 }
