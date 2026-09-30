@@ -13,7 +13,7 @@ use App\Entity\User\User;
 use App\Repository\Project\ProjectRepository;
 use App\Repository\User\UserRepository;
 use App\Service\Project\TerritoryService;
-use App\Service\Scout\FileUriException;
+use App\Service\Scout\NonCrawlableUriException;
 use App\Service\Scout\ScoutService;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -239,7 +239,7 @@ class ProjectsPump implements PumpInterface
             }
 
             return new ProjectVideo($info->url, $info->cover ?? $info->image, $info->image);
-        } catch (FileUriException $e) {
+        } catch (NonCrawlableUriException $e) {
             return new ProjectVideo($e->getUri());
         } catch (\Exception $e) {
             return null;
