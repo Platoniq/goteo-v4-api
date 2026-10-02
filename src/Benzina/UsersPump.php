@@ -22,6 +22,7 @@ class UsersPump implements PumpInterface
     use DoctrineLoggablePumpTrait;
     use UsersPumpTrait;
     use TerritoryPumpTrait;
+    use DatabasePumpTrait;
 
     public function __construct(
         private ManagerRegistry $managerRegistry,
@@ -42,7 +43,7 @@ class UsersPump implements PumpInterface
     public function pump(mixed $record, array $context): void
     {
         $user = new User();
-        $user = $this->processUser($user, $record);
+        $user = $this->processUser($user, $record, $context);
 
         try {
             $this->persist($user, $context);
@@ -63,7 +64,7 @@ class UsersPump implements PumpInterface
             }
 
             $user = new User();
-            $user = $this->processUser($user, $record);
+            $user = $this->processUser($user, $record, $context);
             $user->setHandle(UserService::asHandle($record['id'], 16, 255));
 
             $this->persist($user, $context);
@@ -72,7 +73,7 @@ class UsersPump implements PumpInterface
         }
     }
 
-    private function processUser(User $user, array $record): User
+    private function processUser(User $user, array $record, array $context): User
     {
         $user->setHandle($this->buildHandle($record));
         $user->setPassword($record['password'] ?? '');
@@ -87,6 +88,8 @@ class UsersPump implements PumpInterface
         $user->setLinks($this->getLinks($record));
         $user->setTerritory($this->getTerritory($record));
         $user->setDescription($record['about']);
+        $user->setRoles($this->getRoles($record, $context));
+        $user->setAvatar($this->getAvatar($record));
 
         match ($user->getType()) {
             UserType::Individual => $user = $this->setUserPerson($record, $user),
@@ -204,5 +207,44 @@ class UsersPump implements PumpInterface
         }
 
         return $this->territoryService->search($cleanAddress);
+    }
+
+    private function getRoles(array $record, array $context): array
+    {
+        $query = $this->getDbConnection($context)->prepare(
+            'SELECT * FROM `user_role` r WHERE r.user_id = :user'
+        );
+
+        $query->execute(['user' => $record['id']]);
+
+        $results = $query->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (!$results || empty($results)) {
+            return [];
+        }
+
+        $roles = [];
+        foreach ($results as $result) {
+            if (in_array($result['role_id'], ['superadmin', 'manager'])) {
+                $roles[] = 'ROLE_ADMIN';
+            }
+        }
+
+        return $roles;
+    }
+
+    private function getAvatar(array $record): ?string
+    {
+        $image = $record['avatar'];
+
+        if ($image === null || $image === '') {
+            return null;
+        }
+
+        if (!\str_contains($image, '.')) {
+            return null;
+        }
+
+        return \sprintf('https://s3.eu-west-1.amazonaws.com/goteoassets.org/images/%s', $image);
     }
 }

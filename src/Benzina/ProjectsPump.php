@@ -2,6 +2,7 @@
 
 namespace App\Benzina;
 
+use App\Entity\Project\Collaboration;
 use App\Entity\Project\Project;
 use App\Entity\Project\ProjectCalendar;
 use App\Entity\Project\ProjectDeadline;
@@ -79,11 +80,18 @@ class ProjectsPump implements PumpInterface
         $project->setDateUpdated(new \DateTime());
         $project->setTranslatableLocale($record['lang']);
         $project->setUpdates(new ArrayCollection($this->getProjectUpdates($project, $context)));
+        $project->setCollaborations(new ArrayCollection($this->getProjectCollaborations($project, $context)));
 
         $video = $this->getProjectVideo($record);
+        if ($video !== null) {
+            $project->setVideo($video);
+            $project->setCover($video->cover);
+        }
 
-        $project->setVideo($video);
-        $project->setCover($video->cover);
+        $cover = $this->getProjectCover($record, $context);
+        if ($cover !== null) {
+            $project->setCover($cover);
+        }
 
         $conf = $this->getProjectConf($project, $context);
 
@@ -336,5 +344,67 @@ class ProjectsPump implements PumpInterface
         }
 
         return ProjectDeadline::Minimum;
+    }
+
+    private function getImageSource(array $record, array $context): ?string
+    {
+        $query = $this->getDbConnection($context)->prepare(
+            'SELECT * FROM `project_image` WHERE `project` = :project ORDER BY `order` ASC'
+        );
+
+        $query->execute(['project' => $record['id']]);
+
+        $images = $query->fetchAll();
+
+        foreach ($images as $image) {
+            if ($image['section'] === 'play-video') {
+                return $image['image'];
+            }
+        }
+
+        return $record['image'];
+    }
+
+    private function getProjectCover(array $record, array $context): ?string
+    {
+        $image = $this->getImageSource($record, $context);
+
+        if ($image === null || $image === '') {
+            return null;
+        }
+
+        if (!\str_contains($image, '.')) {
+            return null;
+        }
+
+        return \sprintf('https://s3.eu-west-1.amazonaws.com/goteoassets.org/images/%s', $image);
+    }
+
+    private function getProjectCollaborations(Project $project, array $context): array
+    {
+        $collaborations = [];
+
+        $query = $this->getDbConnection($context)->prepare(
+            'SELECT * FROM `support` s WHERE s.project = :project'
+        );
+
+        $query->execute(['project' => $project->getMigratedId()]);
+        $supports = $query->fetchAll();
+
+        foreach ($supports as $support) {
+            $fulfilled = in_array($project->getStatus(), [
+                ProjectStatus::FundingPaid,
+            ]);
+
+            $collaboration = new Collaboration();
+            $collaboration->setTitle($support['support']);
+            $collaboration->setDescription($support['description']);
+            $collaboration->setFulfilled($fulfilled);
+
+            $collaborations[] = $collaboration;
+            $project->addCollaboration($collaboration);
+        }
+
+        return $collaborations;
     }
 }
